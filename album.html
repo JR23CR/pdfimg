@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>&#x1F4F7; Album PDF</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #f0f2f5;
+    color: #1a1a2e;
+    min-height: 100vh;
+}
+header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    text-align: center;
+    padding: 1.5rem 1rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,.15);
+}
+header h1 { font-size: 2rem; }
+header p { margin-top: .3rem; opacity: .85; font-size: .95rem; }
+.container { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+
+.drop-zone {
+    border: 3px dashed #667eea;
+    border-radius: 16px;
+    padding: 2.5rem 2rem;
+    text-align: center;
+    background: #fff;
+    cursor: pointer;
+    transition: all .25s;
+}
+.drop-zone:hover, .drop-zone.dragover {
+    border-color: #764ba2;
+    background: #f8f6ff;
+}
+.drop-zone .icon { font-size: 3rem; }
+.drop-zone p { color: #555; margin-top: .4rem; }
+.drop-zone input { display: none; }
+
+.logo-indicator {
+    border: 2px dashed #bbb;
+    border-radius: 14px;
+    padding: 1rem 1.5rem;
+    text-align: center;
+    background: #fff;
+    min-width: 170px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.logo-indicator .icon { font-size: 1.8rem; }
+.logo-indicator p { color: #555; margin-top: .2rem; font-size: .9rem; }
+.logo-indicator.has-logo { border-color: #27ae60; background: #f0faf4; }
+
+.controls {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    margin: 1.5rem 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .7rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+.controls label { font-weight: 600; color: #333; font-size: .88rem; }
+.controls select {
+    padding: .35rem .7rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: .88rem;
+    background: #fff;
+}
+.controls select:focus { outline: none; border-color: #667eea; }
+.controls .spacer { flex: 1; }
+.btn {
+    padding: .5rem 1.3rem;
+    border: none;
+    border-radius: 8px;
+    font-size: .9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+}
+.btn-danger { background: #e74c3c; color: #fff; }
+.btn-danger:hover { background: #c0392b; }
+.btn-success { background: #27ae60; color: #fff; }
+.btn-success:hover { background: #219a52; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+#counter { color: #666; font-size: .88rem; }
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 1rem;
+}
+.grid .card {
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,.08);
+    position: relative;
+    aspect-ratio: 1;
+}
+.grid .card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.grid .card .del {
+    position: absolute; top: 5px; right: 5px;
+    width: 26px; height: 26px; border-radius: 50%;
+    border: none; background: rgba(231,76,60,.9); color: #fff;
+    font-size: 1rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+}
+.grid .card .del:hover { background: #c0392b; }
+.grid .card .num {
+    position: absolute; bottom: 5px; left: 5px;
+    background: rgba(0,0,0,.55); color: #fff;
+    font-size: .7rem; padding: 2px 8px; border-radius: 10px;
+}
+.empty-msg {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: #999;
+    padding: 3rem;
+    font-size: 1.1rem;
+}
+
+.toast {
+    position: fixed; bottom: 30px; left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: #333; color: #fff;
+    padding: .7rem 1.8rem; border-radius: 10px;
+    font-size: .9rem; opacity: 0;
+    transition: all .4s; pointer-events: none; z-index: 999;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.success { background: #27ae60; }
+.toast.error { background: #e74c3c; }
+
+@media (max-width: 600px) {
+    header h1 { font-size: 1.4rem; }
+    .container { padding: 1rem; }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+}
+</style>
+</head>
+<body>
+
+<header>
+    <h1>&#x1F4F7; Album PDF</h1>
+    <p>Sube fotos y genera un PDF con diseño inteligente</p>
+</header>
+
+<div class="container">
+
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem;">
+        <div class="drop-zone" id="dropZone" style="flex:1;">
+            <div class="icon">&#x1F4C1;</div>
+            <p><strong>Haz clic</strong> o arrastra fotos aqu&iacute;</p>
+            <p style="font-size:.82rem;color:#999;">JPG, PNG, WEBP &mdash; m&aacute;x 50</p>
+            <input type="file" id="fileInput" accept="image/*" multiple>
+        </div>
+        <div class="logo-indicator" id="logoIndicator">
+            <div class="icon">&#x1F3F7;</div>
+            <p><strong>Logo</strong></p>
+            <p id="logoStatus" style="font-size:.8rem;color:#999;">Cargando...</p>
+        </div>
+    </div>
+
+    <div class="controls">
+        <label for="layout">Fotos/p&aacute;g:</label>
+        <select id="layout">
+            <option value="1">1</option>
+            <option value="2" selected>2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+        </select>
+        <label for="pageSize">Hoja:</label>
+        <select id="pageSize">
+            <option value="letter" selected>Carta</option>
+            <option value="a4">A4</option>
+        </select>
+        <label for="orientation">Orientaci&oacute;n:</label>
+        <select id="orientation">
+            <option value="portrait" selected>Vertical</option>
+            <option value="landscape">Horizontal</option>
+        </select>
+        <label style="margin-left:.3rem;">
+            <input type="checkbox" id="titleToggle"> Portada
+        </label>
+        <input type="text" id="titleInput" placeholder="T&iacute;tulo del &aacute;lbum..." style="padding:.35rem .7rem;border:2px solid #ddd;border-radius:8px;font-size:.88rem;max-width:200px;">
+        <span class="spacer"></span>
+        <span id="counter">0 fotos</span>
+        <button class="btn btn-danger" id="clearBtn">Limpiar</button>
+        <button class="btn btn-success" id="generateBtn">Generar PDF</button>
+    </div>
+
+    <div class="grid" id="photoGrid">
+        <div class="empty-msg">A&uacute;n no hay fotos.</div>
+    </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function() {
+    'use strict';
+
+    var photos = []; // { dataUrl, w, h }
+    var logo = null; // { dataUrl, w, h }
+    var MAX_PHOTOS = 50;
+
+    var dropZone = document.getElementById('dropZone');
+    var fileInput = document.getElementById('fileInput');
+    var logoIndicator = document.getElementById('logoIndicator');
+    var logoStatus = document.getElementById('logoStatus');
+    var grid = document.getElementById('photoGrid');
+    var counter = document.getElementById('counter');
+    var clearBtn = document.getElementById('clearBtn');
+    var generateBtn = document.getElementById('generateBtn');
+    var layoutSel = document.getElementById('layout');
+    var pageSizeSel = document.getElementById('pageSize');
+    var orientationSel = document.getElementById('orientation');
+    var titleToggle = document.getElementById('titleToggle');
+    var titleInput = document.getElementById('titleInput');
+    var toastEl = document.getElementById('toast');
+
+    var toastTimer = null;
+
+    function toast(msg, type) {
+        if (toastTimer) clearTimeout(toastTimer);
+        toastEl.textContent = msg;
+        toastEl.className = 'toast ' + (type || '');
+        requestAnimationFrame(function() { toastEl.classList.add('show'); });
+        toastTimer = setTimeout(function() { toastEl.classList.remove('show'); }, 3000);
+    }
+
+    function render() {
+        if (!photos.length) {
+            grid.innerHTML = '<div class="empty-msg">A\u00fan no hay fotos.</div>';
+            counter.textContent = '0 fotos';
+            generateBtn.disabled = true;
+            return;
+        }
+        generateBtn.disabled = false;
+        counter.textContent = photos.length + ' foto' + (photos.length > 1 ? 's' : '');
+        var html = '';
+        photos.forEach(function(p, i) {
+            html += '<div class="card">'
+                + '<img src="' + p.dataUrl + '">'
+                + '<button class="del" data-index="' + i + '">&times;</button>'
+                + '<span class="num">#' + (i + 1) + '</span>'
+                + '</div>';
+        });
+        grid.innerHTML = html;
+        grid.querySelectorAll('.del').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                photos.splice(parseInt(this.dataset.index, 10), 1);
+                render();
+            });
+        });
+    }
+
+    function loadImageFile(file, cb) {
+        if (!file || !file.type.startsWith('image/')) { cb(null); return; }
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var dataUrl = e.target.result;
+            var img = new Image();
+            img.onload = function() { cb({ dataUrl: dataUrl, w: img.naturalWidth, h: img.naturalHeight }); };
+            img.onerror = function() { cb(null); };
+            img.src = dataUrl;
+        };
+        reader.onerror = function() { cb(null); };
+        reader.readAsDataURL(file);
+    }
+
+    function addPhotos(files) {
+        if (!files || !files.length) return;
+        var remaining = MAX_PHOTOS - photos.length;
+        if (remaining <= 0) { toast('M\u00e1ximo ' + MAX_PHOTOS + ' fotos', 'error'); return; }
+        var toProcess = Math.min(files.length, remaining);
+        var pending = 0, added = 0;
+        for (var i = 0; i < toProcess; i++) {
+            if (!files[i].type.startsWith('image/')) continue;
+            pending++;
+            loadImageFile(files[i], function(result) {
+                if (result) { photos.push(result); added++; }
+                pending--;
+                if (pending === 0) { render(); if (added) toast(added + ' foto' + (added > 1 ? 's' : '') + ' agregada' + (added > 1 ? 's' : ''), 'success'); }
+            });
+        }
+        if (pending === 0) render();
+    }
+
+    // Auto-load LOGO.png
+    (function() {
+        var img = new Image();
+        img.onload = function() {
+            var c = document.createElement('canvas');
+            c.width = img.naturalWidth;
+            c.height = img.naturalHeight;
+            c.getContext('2d').drawImage(img, 0, 0);
+            logo = { dataUrl: c.toDataURL('image/png'), w: img.naturalWidth, h: img.naturalHeight };
+            logoStatus.textContent = 'LOGO.png';
+            logoIndicator.classList.add('has-logo');
+        };
+        img.onerror = function() {
+            logoStatus.textContent = 'No encontrado';
+        };
+        img.src = 'LOGO.png';
+    })();
+
+    fileInput.addEventListener('change', function() { addPhotos(this.files); this.value = ''; });
+    dropZone.addEventListener('click', function() { fileInput.click(); });
+    dropZone.addEventListener('dragover', function(e) { e.preventDefault(); this.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', function() { this.classList.remove('dragover'); });
+    dropZone.addEventListener('drop', function(e) { e.preventDefault(); this.classList.remove('dragover'); addPhotos(e.dataTransfer.files); });
+
+    clearBtn.addEventListener('click', function() {
+        if (!photos.length) return;
+        if (confirm('\u00bfEliminar todas?')) { photos.length = 0; render(); toast('Fotos eliminadas', ''); }
+    });
+
+    // ---------- GENERATE PDF ----------
+    generateBtn.addEventListener('click', function() {
+        if (!photos.length) { toast('No hay fotos', 'error'); return; }
+
+        var n = parseInt(layoutSel.value, 10);
+        var size = pageSizeSel.value;
+        var orient = orientationSel.value;
+
+        var { jsPDF } = window.jspdf;
+        var pdf = new jsPDF({ orientation: orient, unit: 'mm', format: size });
+
+        var pw, ph;
+        if (size === 'a4') { pw = 210; ph = 297; }
+        else { pw = 215.9; ph = 279.4; }
+        if (orient === 'landscape') { var t = pw; pw = ph; ph = t; }
+
+        var MARGIN = 10;
+        var GAP = 5;
+        var PAD = 2.5;
+        var usableW = pw - MARGIN * 2;
+        var usableH = ph - MARGIN * 2;
+
+        // Logo render size
+        var logoH = 0, logoW = 0;
+        if (logo) {
+            var lMaxW = 50, lMaxH = 18;
+            var lr = logo.w / logo.h;
+            if (lr > lMaxW / lMaxH) { logoW = lMaxW; logoH = lMaxW / lr; }
+            else { logoH = lMaxH; logoW = lMaxH * lr; }
+        }
+        var topSpace = logo ? Math.max(logoH + 2, 5) : 3;
+
+        var total = photos.length;
+        var pages = Math.ceil(total / n);
+        var isPortrait = orient === 'portrait';
+        var hasTitle = titleToggle.checked && titleInput.value.trim();
+
+        // ---- Title page ----
+        if (hasTitle) {
+            var titleText = titleInput.value.trim();
+
+            pdf.setFillColor(255, 255, 255);
+            pdf.rect(0, 0, pw, ph, 'F');
+
+            // Border
+            pdf.setDrawColor(215, 215, 215);
+            pdf.setLineWidth(0.3);
+            pdf.rect(MARGIN, MARGIN, usableW, usableH, 'S');
+
+            // Logo centrado arriba
+            if (logo) {
+                var tLogoMaxW = 80, tLogoMaxH = 35;
+                var tlw = logo.w, tlh = logo.h;
+                var tlr = tlw / tlh;
+                var tLogoW, tLogoH;
+                if (tlr > tLogoMaxW / tLogoMaxH) { tLogoW = tLogoMaxW; tLogoH = tLogoMaxW / tlr; }
+                else { tLogoH = tLogoMaxH; tLogoW = tLogoMaxH * tlr; }
+                pdf.addImage(logo.dataUrl, undefined, (pw - tLogoW) / 2 - 2, MARGIN + 12, tLogoW, tLogoH, undefined, 'FAST');
+            }
+
+            // Decorative line above title
+            var lineY = ph / 2 - 12;
+            pdf.setDrawColor(180, 180, 180);
+            pdf.setLineWidth(0.5);
+            pdf.line(MARGIN + 20, lineY, pw - MARGIN - 20, lineY);
+
+            // Title
+            pdf.setFontSize(26);
+            pdf.setTextColor(50, 50, 50);
+            pdf.setFont('helvetica', 'bold');
+            var titleLines = pdf.splitTextToSize(titleText, usableW - 40);
+            pdf.text(titleLines, pw / 2, lineY + 14, { align: 'center' });
+
+            // Decorative line below title
+            pdf.setDrawColor(180, 180, 180);
+            pdf.setLineWidth(0.5);
+            pdf.line(MARGIN + 20, lineY + 20 + titleLines.length * 10, pw - MARGIN - 20, lineY + 20 + titleLines.length * 10);
+
+            // Photo count
+            pdf.setFontSize(11);
+            pdf.setTextColor(130, 130, 130);
+            pdf.setFont('helvetica', 'normal');
+            pdf.text(total + ' foto' + (total > 1 ? 's' : ''), pw / 2, lineY + 20 + titleLines.length * 10 + 12, { align: 'center' });
+
+            pdf.setFont('helvetica', 'normal');
+        }
+
+        for (var p = 0; p < pages; p++) {
+            if (p > 0 || hasTitle) pdf.addPage();
+
+            var start = p * n;
+            var end = Math.min(start + n, total);
+
+            // Background
+            pdf.setFillColor(255, 255, 255);
+            pdf.rect(0, 0, pw, ph, 'F');
+
+            // Border
+            pdf.setDrawColor(215, 215, 215);
+            pdf.setLineWidth(0.3);
+            pdf.rect(MARGIN, MARGIN, usableW, usableH, 'S');
+
+            // Logo
+            if (logo) {
+                pdf.addImage(logo.dataUrl, undefined, pw - MARGIN - logoW, MARGIN + 1, logoW, logoH, undefined, 'FAST');
+            }
+
+            // Page number
+            pdf.setFontSize(7.5);
+            pdf.setTextColor(175, 175, 175);
+            pdf.text((p + 1) + '/' + pages, MARGIN + 2, MARGIN + 3.5);
+
+            // Compute cells for this page
+            var pagePhotos = [];
+            for (var i = start; i < end; i++) pagePhotos.push(photos[i]);
+            var count = pagePhotos.length;
+
+            var cells = []; // { x, y, w, h }
+
+            if (count === 1) {
+                cells.push({ x: MARGIN + PAD, y: MARGIN + topSpace + PAD, w: usableW - PAD * 2, h: usableH - topSpace - PAD * 2 });
+            } else if (count === 2) {
+                if (isPortrait) {
+                    // Stacked vertically, proportional to aspect ratios
+                    var innerW = usableW - PAD * 2;
+                    var h1n = innerW / pagePhotos[0].w * pagePhotos[0].h;
+                    var h2n = innerW / pagePhotos[1].w * pagePhotos[1].h;
+                    var totalNat = h1n + h2n + GAP;
+                    var availH = usableH - topSpace - PAD * 2;
+                    var scale = totalNat <= availH ? 1 : availH / totalNat;
+                    var h1 = h1n * scale;
+                    var h2 = h2n * scale;
+                    cells.push({ x: MARGIN + PAD, y: MARGIN + topSpace + PAD, w: innerW, h: h1 });
+                    cells.push({ x: MARGIN + PAD, y: MARGIN + topSpace + PAD + h1 + GAP, w: innerW, h: h2 });
+                } else {
+                    // Side by side, proportional
+                    var innerH = usableH - topSpace - PAD * 2;
+                    var w1n = innerH / pagePhotos[0].h * pagePhotos[0].w;
+                    var w2n = innerH / pagePhotos[1].h * pagePhotos[1].w;
+                    var totalNatW = w1n + w2n + GAP;
+                    var availW = usableW - PAD * 2;
+                    var scale = totalNatW <= availW ? 1 : availW / totalNatW;
+                    var w1 = w1n * scale;
+                    var w2 = w2n * scale;
+                    cells.push({ x: MARGIN + PAD, y: MARGIN + topSpace + PAD, w: w1, h: innerH });
+                    cells.push({ x: MARGIN + PAD + w1 + GAP, y: MARGIN + topSpace + PAD, w: w2, h: innerH });
+                }
+            } else if (count === 3) {
+                if (isPortrait) {
+                    // Top: full width, Bottom: two side by side
+                    var gap = GAP;
+                    var colW = (usableW - PAD * 2 - gap) / 2;
+                    var rowH1n = (usableW - PAD * 2) / pagePhotos[0].w * pagePhotos[0].h;
+                    var rowH2n = colW / pagePhotos[1].w * pagePhotos[1].h;
+                    var rowH3n = colW / pagePhotos[2].w * pagePhotos[2].h;
+                    var totalNat = rowH1n + gap + Math.max(rowH2n, rowH3n);
+                    var availH = usableH - topSpace - PAD * 2;
+                    var scale = totalNat <= availH ? 1 : availH / totalNat;
+                    var rh1 = rowH1n * scale;
+                    var rh2 = Math.max(rowH2n, rowH3n) * scale;
+                    cells.push({ x: MARGIN + PAD, y: MARGIN + topSpace + PAD, w: usableW - PAD * 2, h: rh1 });
+                    cells.push({ x: MARGIN + PAD, y: MARGIN + topSpace + PAD + rh1 + gap, w: colW, h: rh2 });
+                    cells.push({ x: MARGIN + PAD + colW + gap, y: MARGIN + topSpace + PAD + rh1 + gap, w: colW, h: rh2 });
+                } else {
+                    // Left: two stacked, Right: one full height
+                    var gap = GAP;
+                    var rowH = (usableH - topSpace - PAD * 2 - gap) / 2;
+                    var w1n = rowH / pagePhotos[0].h * pagePhotos[0].w;
+                    var w2n = rowH / pagePhotos[1].h * pagePhotos[1].w;
+                    var w3n = (usableH - topSpace - PAD * 2) / pagePhotos[2].h * pagePhotos[2].w;
+                    var totalNatW = Math.max(w1n, w2n) + gap + w3n;
+                    var availW = usableW - PAD * 2;
+                    var scale = totalNatW <= availW ? 1 : availW / totalNatW;
+                    var cw12 = Math.max(w1n, w2n) * scale;
+                    var cw3 = w3n * scale;
+                    cells.push({ x: MARGIN + PAD, y: MARGIN + topSpace + PAD, w: cw12, h: rowH });
+                    cells.push({ x: MARGIN + PAD, y: MARGIN + topSpace + PAD + rowH + gap, w: cw12, h: rowH });
+                    cells.push({ x: MARGIN + PAD + cw12 + gap, y: MARGIN + topSpace + PAD, w: cw3, h: usableH - topSpace - PAD * 2 });
+                }
+            } else {
+                // 4 photos: 2x2 grid
+                var gap = GAP;
+                var cw = (usableW - PAD * 2 - gap) / 2;
+                var ch = (usableH - topSpace - PAD * 2 - gap) / 2;
+                for (var r = 0; r < 2; r++) {
+                    for (var c = 0; c < 2; c++) {
+                        cells.push({
+                            x: MARGIN + PAD + c * (cw + gap),
+                            y: MARGIN + topSpace + PAD + r * (ch + gap),
+                            w: cw, h: ch
+                        });
+                    }
+                }
+            }
+
+            // Render each photo in its cell
+            for (var j = 0; j < cells.length && j < pagePhotos.length; j++) {
+                var cell = cells[j];
+                var photo = pagePhotos[j];
+                var cw = cell.w;
+                var ch = cell.h;
+                var pr = photo.w / photo.h;
+                var cr = cw / ch;
+
+                var dx, dy, dw, dh;
+                if (pr > cr) {
+                    dw = cw;
+                    dh = cw / pr;
+                    dx = cell.x;
+                    dy = cell.y + (ch - dh) / 2;
+                } else {
+                    dh = ch;
+                    dw = ch * pr;
+                    dx = cell.x + (cw - dw) / 2;
+                    dy = cell.y;
+                }
+
+                // Shadow
+                pdf.setFillColor(0, 0, 0, 0.05);
+                pdf.roundedRect(dx + 0.5, dy + 0.5, dw, dh, 1, 1, 'F');
+
+                // White back
+                pdf.setFillColor(255, 255, 255);
+                pdf.roundedRect(dx - 1, dy - 1, dw + 2, dh + 2, 1, 1, 'F');
+
+                // Photo
+                pdf.addImage(photo.dataUrl, undefined, dx, dy, dw, dh, undefined, 'FAST');
+            }
+        }
+
+        pdf.save('album-fotos.pdf');
+        toast('PDF generado (' + pages + ' p&aacute;g' + (pages > 1 ? 'inas' : 'ina') + ')', 'success');
+    });
+
+    render();
+})();
+</script>
+</body>
+</html>
