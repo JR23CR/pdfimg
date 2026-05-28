@@ -557,7 +557,13 @@ header p { margin-top: .3rem; opacity: .85; font-size: .95rem; }
             }
         }
 
-        pdf.save('album-fotos.pdf');
+        var now = new Date();
+        var dd = String(now.getDate()).padStart(2, '0');
+        var mm = String(now.getMonth() + 1).padStart(2, '0');
+        var yyyy = now.getFullYear();
+        var hh = String(now.getHours()).padStart(2, '0');
+        var min = String(now.getMinutes()).padStart(2, '0');
+        pdf.save('FOTOGRAFIAS ' + dd + '-' + mm + '-' + yyyy + ' ' + hh + ':' + min);
         toast('PDF generado (' + pages + ' p&aacute;g' + (pages > 1 ? 'inas' : 'ina') + ')', 'success');
     });
 
