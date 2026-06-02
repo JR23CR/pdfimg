@@ -251,8 +251,12 @@ header p { margin-top: .3rem; opacity: .85; font-size: .95rem; }
 }
 .selected-indicator .btn-xs:hover { background: #667eea; color: #fff; }
 
+/* Drag & Drop */
+.grid .card { cursor: grab; user-select: none; -webkit-user-select: none; }
+.grid .card.dragging { opacity: .4; }
+.grid .card.drag-over { border: 2px dashed #667eea; background: #f8f6ff; }
+
 /* Comment Badge */
-.grid .card { cursor: pointer; }
 .grid .card .comment-badge {
     position: absolute; top: 5px; left: 5px;
     background: #667eea; color: #fff;
@@ -431,7 +435,7 @@ header p { margin-top: .3rem; opacity: .85; font-size: .95rem; }
 
     <div class="asset-panel" id="assetPanel">
         <div class="asset-toolbar">
-            <input type="text" id="assetSearch" placeholder="Buscar por c&oacute;digo o descripci&oacute;n...">
+            <input type="text" id="assetSearch" placeholder="Buscar por descripci&oacute;n, modelo o marca...">
             <span class="asset-count" id="assetCount">0 activos</span>
             <button class="btn btn-outline" id="newAssetBtn" style="margin-left:auto;">+ Nuevo Activo</button>
         </div>
@@ -439,9 +443,8 @@ header p { margin-top: .3rem; opacity: .85; font-size: .95rem; }
             <table>
                 <thead>
                     <tr>
-                        <th>C&oacute;digo</th>
                         <th>Descripci&oacute;n</th>
-                        <th>Tipo</th>
+                        <th>Modelo</th>
                         <th>Marca</th>
                         <th style="width:170px;">Acciones</th>
                     </tr>
@@ -661,8 +664,9 @@ header p { margin-top: .3rem; opacity: .85; font-size: .95rem; }
     function renderAssetTable() {
         var q = assetSearch.value.trim().toLowerCase();
         var filtered = q ? assets.filter(function(a) {
-            return (a.codigo && a.codigo.toLowerCase().indexOf(q) !== -1) ||
-                   (a.descripcion && a.descripcion.toLowerCase().indexOf(q) !== -1);
+            return (a.descripcion && a.descripcion.toLowerCase().indexOf(q) !== -1) ||
+                   (a.no_modelo && a.no_modelo.toLowerCase().indexOf(q) !== -1) ||
+                   (a.marca && a.marca.toLowerCase().indexOf(q) !== -1);
         }) : assets;
 
         assetCount.textContent = filtered.length + ' activo' + (filtered.length !== 1 ? 's' : '');
@@ -677,16 +681,14 @@ header p { margin-top: .3rem; opacity: .85; font-size: .95rem; }
         var html = '';
         filtered.forEach(function(a) {
             var selected = (a.id === selectedAssetId) ? ' class="selected"' : '';
-            var cod = a.codigo || '—';
             var desc = a.descripcion || '—';
-            var tipo = a.tipo || '—';
+            var modelo = a.no_modelo || '—';
             var marca = a.marca || '—';
             var selectedTxt = (a.id === selectedAssetId) ? '✓' : 'Seleccionar';
             var selectedCls = (a.id === selectedAssetId) ? 'btn-sm-primary' : 'btn-sm-primary';
             html += '<tr' + selected + '>'
-                + '<td>' + escHtml(cod) + '</td>'
                 + '<td>' + escHtml(desc) + '</td>'
-                + '<td>' + escHtml(tipo) + '</td>'
+                + '<td>' + escHtml(modelo) + '</td>'
                 + '<td>' + escHtml(marca) + '</td>'
                 + '<td class="actions">'
                 + '<button class="' + selectedCls + '" data-action="select" data-id="' + a.id + '">' + selectedTxt + '</button>'
@@ -821,9 +823,9 @@ header p { margin-top: .3rem; opacity: .85; font-size: .95rem; }
         var html = '';
         photos.forEach(function(p, i) {
             var badge = p.comment && p.comment.trim() ? '<span class="comment-badge">\uD83D\uDCAC</span>' : '';
-            html += '<div class="card" data-index="' + i + '">'
+            html += '<div class="card" draggable="true" data-index="' + i + '">'
                 + badge
-                + '<img src="' + p.dataUrl + '">'
+                + '<img src="' + p.dataUrl + '" draggable="false">'
                 + '<button class="del" data-index="' + i + '">&times;</button>'
                 + '<span class="num">#' + (i + 1) + '</span>'
                 + '</div>';
@@ -833,6 +835,33 @@ header p { margin-top: .3rem; opacity: .85; font-size: .95rem; }
             card.addEventListener('click', function(e) {
                 if (e.target.classList.contains('del')) return;
                 openCommentModal(parseInt(this.dataset.index, 10));
+            });
+            card.addEventListener('dragstart', function(e) {
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', this.dataset.index);
+                this.classList.add('dragging');
+            });
+            card.addEventListener('dragend', function(e) {
+                this.classList.remove('dragging');
+                grid.querySelectorAll('.card.drag-over').forEach(function(c) { c.classList.remove('drag-over'); });
+            });
+            card.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                if (!this.classList.contains('dragging')) this.classList.add('drag-over');
+            });
+            card.addEventListener('dragleave', function() {
+                this.classList.remove('drag-over');
+            });
+            card.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('drag-over');
+                var fromIdx = parseInt(e.dataTransfer.getData('text/plain'), 10);
+                var toIdx = parseInt(this.dataset.index, 10);
+                if (fromIdx === toIdx) return;
+                var item = photos.splice(fromIdx, 1)[0];
+                photos.splice(toIdx, 0, item);
+                render();
             });
         });
         grid.querySelectorAll('.del').forEach(function(btn) {
@@ -1014,6 +1043,7 @@ header p { margin-top: .3rem; opacity: .85; font-size: .95rem; }
             pdf.rect(MARGIN, MARGIN, usableW, usableH, 'S');
 
             // Logo centrado arriba
+            var titleY;
             if (logo) {
                 var tLogoMaxW = 80, tLogoMaxH = 35;
                 var tlw = logo.w, tlh = logo.h;
@@ -1022,31 +1052,31 @@ header p { margin-top: .3rem; opacity: .85; font-size: .95rem; }
                 if (tlr > tLogoMaxW / tLogoMaxH) { tLogoW = tLogoMaxW; tLogoH = tLogoMaxW / tlr; }
                 else { tLogoH = tLogoMaxH; tLogoW = tLogoMaxH * tlr; }
                 pdf.addImage(logo.dataUrl, undefined, (pw - tLogoW) / 2 - 2, MARGIN + 12, tLogoW, tLogoH, undefined, 'FAST');
+                titleY = MARGIN + 12 + tLogoH + 14;
+            } else {
+                titleY = MARGIN + 20;
             }
 
-            // Decorative line above title
-            var lineY = ph / 2 - 12;
-            pdf.setDrawColor(180, 180, 180);
-            pdf.setLineWidth(0.5);
-            pdf.line(MARGIN + 20, lineY, pw - MARGIN - 20, lineY);
-
-            // Title
-            pdf.setFontSize(26);
+            // Title — más arriba
+            var titleCenterY = titleY + 6;
+            pdf.setFontSize(24);
             pdf.setTextColor(50, 50, 50);
             pdf.setFont('helvetica', 'bold');
             var titleLines = pdf.splitTextToSize(titleText, usableW - 40);
-            pdf.text(titleLines, pw / 2, lineY + 14, { align: 'center' });
-
-            // Decorative line below title
-            pdf.setDrawColor(180, 180, 180);
-            pdf.setLineWidth(0.5);
-            pdf.line(MARGIN + 20, lineY + 20 + titleLines.length * 10, pw - MARGIN - 20, lineY + 20 + titleLines.length * 10);
+            pdf.text(titleLines, pw / 2, titleCenterY, { align: 'center' });
 
             // Photo count
+            var countY = titleCenterY + 6 + (titleLines.length - 1) * 10;
             pdf.setFontSize(11);
             pdf.setTextColor(130, 130, 130);
             pdf.setFont('helvetica', 'normal');
-            pdf.text(total + ' foto' + (total > 1 ? 's' : ''), pw / 2, lineY + 20 + titleLines.length * 10 + 12, { align: 'center' });
+            pdf.text(total + ' foto' + (total > 1 ? 's' : ''), pw / 2, countY + 6, { align: 'center' });
+
+            // Light separator
+            var sepY = countY + 12;
+            pdf.setDrawColor(200, 200, 200);
+            pdf.setLineWidth(0.3);
+            pdf.line(MARGIN + 30, sepY, pw - MARGIN - 30, sepY);
 
             // Asset table on cover
             if (selectedAssetId) {
@@ -1055,27 +1085,30 @@ header p { margin-top: .3rem; opacity: .85; font-size: .95rem; }
                     if (assets[ai].id === selectedAssetId) { coverAsset = assets[ai]; break; }
                 }
                 if (coverAsset) {
-                    var tableTitleY = lineY + 20 + titleLines.length * 10 + 28;
-                    pdf.setFontSize(14);
+                    var tableTitleY = sepY + 10;
+                    pdf.setFontSize(13);
                     pdf.setFont('helvetica', 'bold');
                     pdf.setTextColor(50, 50, 50);
                     pdf.text('FICHA T\u00C9CNICA DEL ACTIVO', pw / 2, tableTitleY, { align: 'center' });
 
-                    var colW1 = usableW * 0.4;
-                    var colW2 = usableW * 0.6;
-                    var rowH = 7;
-                    var tableX = MARGIN;
+                    var tableW = usableW - 8;
+                    var colW1 = tableW * 0.38;
+                    var colW2 = tableW * 0.62;
+                    var rowH = 6.5;
+                    var tableX = MARGIN + 4;
                     var tableY = tableTitleY + 6;
 
                     var fieldNames = [
-                        'Correlativo', 'Tipo', 'C\u00F3digo', 'Descripci\u00F3n',
-                        'No. Serie', 'No. Modelo', 'Marca', 'Ubicaci\u00F3n',
-                        'Placa', 'Chasis', 'Motor', 'Estado', 'Observaciones'
+                        'Tipo', 'Descripci\u00F3n',
+                        'No. Modelo', 'Marca',
+                        'No. Serie',
+                        'Placa', 'Chasis', 'Motor'
                     ];
                     var fieldKeys = [
-                        'correlativo', 'tipo', 'codigo', 'descripcion',
-                        'no_serie', 'no_modelo', 'marca', 'ubicacion',
-                        'placa', 'chasis', 'motor', 'estado', 'observaciones'
+                        'tipo', 'descripcion',
+                        'no_modelo', 'marca',
+                        'no_serie',
+                        'placa', 'chasis', 'motor'
                     ];
 
                     pdf.setDrawColor(200, 200, 200);
@@ -1237,11 +1270,11 @@ header p { margin-top: .3rem; opacity: .85; font-size: .95rem; }
                 var commentLines = null;
                 var commentHeight = 0;
                 if (n <= 2 && photo.comment && photo.comment.trim()) {
-                    pdf.setFontSize(8);
+                    pdf.setFontSize(9);
                     pdf.setFont('helvetica', 'normal');
-                    pdf.setTextColor(80, 80, 80);
+                    pdf.setTextColor(30, 30, 30);
                     commentLines = pdf.splitTextToSize(photo.comment.trim(), usableW - PAD * 2);
-                    commentHeight = commentLines.length * 3.5 + 3; // lines * lineH + gap
+                    commentHeight = commentLines.length * 4 + 3; // lines * lineH + gap
                 }
 
                 // If comment exists, top-align photo and leave room for comment text
@@ -1273,9 +1306,9 @@ header p { margin-top: .3rem; opacity: .85; font-size: .95rem; }
 
                 // Comment text below photo
                 if (commentLines) {
-                    pdf.setFontSize(8);
+                    pdf.setFontSize(9);
                     pdf.setFont('helvetica', 'normal');
-                    pdf.setTextColor(80, 80, 80);
+                    pdf.setTextColor(30, 30, 30);
                     pdf.text(commentLines, cell.x + PAD, dy + dh + 3);
                 }
             }
