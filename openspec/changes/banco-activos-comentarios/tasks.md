@@ -64,7 +64,7 @@ Chain strategy: feature-branch-chain
 
 ## Phase 3: Photo Comments
 
-- **T6** — Implement comment modal
+- **[x] T6** — Implement comment modal
   - **Description**: Click photo card → modal overlay with 150px photo preview left + textarea right. Pre-fills from `photo.comment`. "Guardar" sets `photo.comment = textarea.value`, closes modal, re-renders grid with comment badge. "Cancelar" discards and closes. Comments are in-memory only.
   - **Files**: `index.html` (~55 lines: ~10 CSS, ~20 HTML, ~25 JS)
   - **Deps**: T2
@@ -73,14 +73,14 @@ Chain strategy: feature-branch-chain
 
 ## Phase 4: Enhanced PDF
 
-- **T7** — Add asset table to PDF cover
+- **[x] T7** — Add asset table to PDF cover
   - **Description**: When `selectedAssetId` is set and portada toggle on: render 13-row 2-column table (campo | valor) below title. Column widths 40%/60%. Font bold 8pt left, normal 8pt right. Empty values render as "—". Borders gray 0.2pt. Without asset → existing cover unchanged.
   - **Files**: `index.html` (~35 lines)
   - **Deps**: T5
   - **Acceptance**: Cover with asset shows full 13-row table. Without asset shows existing logo+title+count. With portada off, skip cover entirely.
   - **Effort**: S
 
-- **T8** — Add photo comments to PDF photo pages
+- **[x] T8** — Add photo comments to PDF photo pages
   - **Description**: Per photo page: if `n <= 2` AND `photo.comment.length > 0`, render comment below photo using `splitTextToSize`, 8pt, centered, gray text. Comment height = lines * 3.5mm + 3mm gap. Adjust photo height proportionally if comment overflows. Layouts 3-4: no comments.
   - **Files**: `index.html` (~25 lines)
   - **Deps**: T6, T7
@@ -89,7 +89,7 @@ Chain strategy: feature-branch-chain
 
 ## Phase 5: Polish
 
-- **T9** — Handle edge cases
+- **[x] T9** — Handle edge cases
   - **Description**: localStorage QuotaExceededError → toast error with no data loss. Deleted asset that is `selectedAssetId` → clear selection. Empty comment rendered as nothing in PDF. Responsive: asset form modal goes 1-col on mobile. Empty fields in asset table show "—".
   - **Files**: `index.html` (~15 lines)
   - **Deps**: T4, T5, T6, T7, T8
