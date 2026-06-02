@@ -251,6 +251,60 @@ header p { margin-top: .3rem; opacity: .85; font-size: .95rem; }
 }
 .selected-indicator .btn-xs:hover { background: #667eea; color: #fff; }
 
+/* Comment Badge */
+.grid .card { cursor: pointer; }
+.grid .card .comment-badge {
+    position: absolute; top: 5px; left: 5px;
+    background: #667eea; color: #fff;
+    border-radius: 12px; padding: 2px 8px;
+    font-size: .7rem; font-weight: 600;
+    z-index: 1;
+    line-height: 1.4;
+}
+
+/* Comment Modal */
+.comment-modal-content { max-width: 500px; }
+.comment-modal-content .comment-layout {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+.comment-modal-content .comment-preview {
+    flex: 0 0 150px;
+    max-width: 150px;
+}
+.comment-modal-content .comment-preview img {
+    width: 100%;
+    max-height: 200px;
+    object-fit: contain;
+    border-radius: 8px;
+    background: #f5f5f5;
+}
+.comment-modal-content .comment-textarea-wrap {
+    flex: 1;
+    min-width: 200px;
+}
+.comment-modal-content .comment-textarea-wrap textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: .5rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: .88rem;
+    resize: vertical;
+}
+.comment-modal-content .comment-textarea-wrap textarea:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+@media (max-width: 600px) {
+    .comment-modal-content .comment-layout { flex-direction: column; }
+    .comment-modal-content .comment-preview { flex: 0 0 auto; max-width: 100%; }
+    .comment-modal-content .comment-preview img { max-height: 150px; }
+}
+
 /* Modals */
 .modal-overlay {
     display: none;
@@ -469,6 +523,24 @@ header p { margin-top: .3rem; opacity: .85; font-size: .95rem; }
         </div>
     </div>
 
+    <div class="modal-overlay" id="commentModal">
+        <div class="modal-content comment-modal-content">
+            <h3>Comentario de Foto</h3>
+            <div class="comment-layout">
+                <div class="comment-preview">
+                    <img id="commentPhotoPreview" src="" alt="Vista previa">
+                </div>
+                <div class="comment-textarea-wrap">
+                    <textarea id="commentTextarea" placeholder="Escribe un comentario..."></textarea>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn" id="commentCancel" style="background:#eee;color:#333;">Cancelar</button>
+                <button type="button" class="btn btn-success" id="commentSave">Guardar</button>
+            </div>
+        </div>
+    </div>
+
     <div class="grid" id="photoGrid">
         <div class="empty-msg">A&uacute;n no hay fotos.</div>
     </div>
@@ -485,6 +557,7 @@ header p { margin-top: .3rem; opacity: .85; font-size: .95rem; }
     var logo = null; // { dataUrl, w, h }
     var assets = [];
     var selectedAssetId = null;
+    var commentPhotoIndex = -1;
     var MAX_PHOTOS = 50;
 
     var dropZone = document.getElementById('dropZone');
@@ -516,6 +589,12 @@ header p { margin-top: .3rem; opacity: .85; font-size: .95rem; }
     var selectedBadge = document.getElementById('selectedBadge');
     var deselectBtn = document.getElementById('deselectBtn');
 
+    var commentModal = document.getElementById('commentModal');
+    var commentPhotoPreview = document.getElementById('commentPhotoPreview');
+    var commentTextarea = document.getElementById('commentTextarea');
+    var commentSave = document.getElementById('commentSave');
+    var commentCancel = document.getElementById('commentCancel');
+
     var toastTimer = null;
 
     function toast(msg, type) {
@@ -543,7 +622,7 @@ header p { margin-top: .3rem; opacity: .85; font-size: .95rem; }
             localStorage.setItem('pdfimg_assets', JSON.stringify(assets));
         } catch (e) {
             if (e.name === 'QuotaExceededError' || e.code === 22) {
-                toast('Error: almacenamiento local lleno. No se pudieron guardar los activos.', 'error');
+                toast('Error: espacio de almacenamiento lleno', 'error');
             } else {
                 toast('Error al guardar activos.', 'error');
             }
@@ -705,6 +784,31 @@ header p { margin-top: .3rem; opacity: .85; font-size: .95rem; }
         renderAssetTable();
     }
 
+    // ---- PHOTO COMMENTS ----
+    function openCommentModal(index) {
+        if (index < 0 || index >= photos.length) return;
+        commentPhotoIndex = index;
+        var photo = photos[index];
+        commentPhotoPreview.src = photo.dataUrl;
+        commentTextarea.value = photo.comment || '';
+        commentModal.classList.add('open');
+    }
+
+    function closeCommentModal() {
+        commentPhotoIndex = -1;
+        commentPhotoPreview.src = '';
+        commentTextarea.value = '';
+        commentModal.classList.remove('open');
+    }
+
+    function saveComment() {
+        if (commentPhotoIndex >= 0 && commentPhotoIndex < photos.length) {
+            photos[commentPhotoIndex].comment = commentTextarea.value;
+        }
+        closeCommentModal();
+        render();
+    }
+
     function render() {
         if (!photos.length) {
             grid.innerHTML = '<div class="empty-msg">A\u00fan no hay fotos.</div>';
@@ -716,15 +820,24 @@ header p { margin-top: .3rem; opacity: .85; font-size: .95rem; }
         counter.textContent = photos.length + ' foto' + (photos.length > 1 ? 's' : '');
         var html = '';
         photos.forEach(function(p, i) {
-            html += '<div class="card">'
+            var badge = p.comment && p.comment.trim() ? '<span class="comment-badge">\uD83D\uDCAC</span>' : '';
+            html += '<div class="card" data-index="' + i + '">'
+                + badge
                 + '<img src="' + p.dataUrl + '">'
                 + '<button class="del" data-index="' + i + '">&times;</button>'
                 + '<span class="num">#' + (i + 1) + '</span>'
                 + '</div>';
         });
         grid.innerHTML = html;
+        grid.querySelectorAll('.card').forEach(function(card) {
+            card.addEventListener('click', function(e) {
+                if (e.target.classList.contains('del')) return;
+                openCommentModal(parseInt(this.dataset.index, 10));
+            });
+        });
         grid.querySelectorAll('.del').forEach(function(btn) {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
                 photos.splice(parseInt(this.dataset.index, 10), 1);
                 render();
             });
@@ -845,6 +958,12 @@ header p { margin-top: .3rem; opacity: .85; font-size: .95rem; }
         if (e.target === assetFormModal) closeAssetForm();
     });
 
+    commentSave.addEventListener('click', saveComment);
+    commentCancel.addEventListener('click', closeCommentModal);
+    commentModal.addEventListener('click', function(e) {
+        if (e.target === commentModal) closeCommentModal();
+    });
+
     // ---------- GENERATE PDF ----------
     generateBtn.addEventListener('click', function() {
         if (!photos.length) { toast('No hay fotos', 'error'); return; }
@@ -928,6 +1047,58 @@ header p { margin-top: .3rem; opacity: .85; font-size: .95rem; }
             pdf.setTextColor(130, 130, 130);
             pdf.setFont('helvetica', 'normal');
             pdf.text(total + ' foto' + (total > 1 ? 's' : ''), pw / 2, lineY + 20 + titleLines.length * 10 + 12, { align: 'center' });
+
+            // Asset table on cover
+            if (selectedAssetId) {
+                var coverAsset = null;
+                for (var ai = 0; ai < assets.length; ai++) {
+                    if (assets[ai].id === selectedAssetId) { coverAsset = assets[ai]; break; }
+                }
+                if (coverAsset) {
+                    var tableTitleY = lineY + 20 + titleLines.length * 10 + 28;
+                    pdf.setFontSize(14);
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.setTextColor(50, 50, 50);
+                    pdf.text('FICHA T\u00C9CNICA DEL ACTIVO', pw / 2, tableTitleY, { align: 'center' });
+
+                    var colW1 = usableW * 0.4;
+                    var colW2 = usableW * 0.6;
+                    var rowH = 7;
+                    var tableX = MARGIN;
+                    var tableY = tableTitleY + 6;
+
+                    var fieldNames = [
+                        'Correlativo', 'Tipo', 'C\u00F3digo', 'Descripci\u00F3n',
+                        'No. Serie', 'No. Modelo', 'Marca', 'Ubicaci\u00F3n',
+                        'Placa', 'Chasis', 'Motor', 'Estado', 'Observaciones'
+                    ];
+                    var fieldKeys = [
+                        'correlativo', 'tipo', 'codigo', 'descripcion',
+                        'no_serie', 'no_modelo', 'marca', 'ubicacion',
+                        'placa', 'chasis', 'motor', 'estado', 'observaciones'
+                    ];
+
+                    pdf.setDrawColor(200, 200, 200);
+                    pdf.setLineWidth(0.2);
+
+                    for (var fi = 0; fi < fieldNames.length; fi++) {
+                        var fy = tableY + fi * rowH;
+                        var val = coverAsset[fieldKeys[fi]];
+                        var valStr = (val !== null && val !== undefined) ? String(val) : '\u2014';
+
+                        // Left cell (campo)
+                        pdf.setFont('helvetica', 'bold');
+                        pdf.setFontSize(8);
+                        pdf.rect(tableX, fy, colW1, rowH, 'S');
+                        pdf.text(fieldNames[fi], tableX + 2, fy + 5);
+
+                        // Right cell (valor)
+                        pdf.setFont('helvetica', 'normal');
+                        pdf.rect(tableX + colW1, fy, colW2, rowH, 'S');
+                        pdf.text(valStr, tableX + colW1 + 2, fy + 5);
+                    }
+                }
+            }
 
             pdf.setFont('helvetica', 'normal');
         }
@@ -1062,6 +1233,33 @@ header p { margin-top: .3rem; opacity: .85; font-size: .95rem; }
                     dy = cell.y;
                 }
 
+                // Comment handling — only for layouts 1-2
+                var commentLines = null;
+                var commentHeight = 0;
+                if (n <= 2 && photo.comment && photo.comment.trim()) {
+                    pdf.setFontSize(8);
+                    pdf.setFont('helvetica', 'normal');
+                    pdf.setTextColor(80, 80, 80);
+                    commentLines = pdf.splitTextToSize(photo.comment.trim(), usableW - PAD * 2);
+                    commentHeight = commentLines.length * 3.5 + 3; // lines * lineH + gap
+                }
+
+                // If comment exists, top-align photo and leave room for comment text
+                if (commentHeight > 0 && commentHeight < ch - 5) {
+                    var availPhotoH = ch - commentHeight;
+                    if (pr > cw / availPhotoH) {
+                        dw = cw;
+                        dh = cw / pr;
+                        dx = cell.x;
+                        dy = cell.y;
+                    } else {
+                        dh = availPhotoH;
+                        dw = availPhotoH * pr;
+                        dx = cell.x + (cw - dw) / 2;
+                        dy = cell.y;
+                    }
+                }
+
                 // Shadow
                 pdf.setFillColor(0, 0, 0, 0.05);
                 pdf.roundedRect(dx + 0.5, dy + 0.5, dw, dh, 1, 1, 'F');
@@ -1072,6 +1270,14 @@ header p { margin-top: .3rem; opacity: .85; font-size: .95rem; }
 
                 // Photo
                 pdf.addImage(photo.dataUrl, undefined, dx, dy, dw, dh, undefined, 'FAST');
+
+                // Comment text below photo
+                if (commentLines) {
+                    pdf.setFontSize(8);
+                    pdf.setFont('helvetica', 'normal');
+                    pdf.setTextColor(80, 80, 80);
+                    pdf.text(commentLines, cell.x + PAD, dy + dh + 3);
+                }
             }
         }
 
