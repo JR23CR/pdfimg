@@ -290,7 +290,7 @@ header p { margin-top: .3rem; opacity: .85; font-size: .95rem; }
             if (!files[i].type.startsWith('image/')) continue;
             pending++;
             loadImageFile(files[i], function(result) {
-                if (result) { photos.push(result); added++; }
+                if (result) { photos.push({ dataUrl: result.dataUrl, w: result.w, h: result.h, comment: '' }); added++; }
                 pending--;
                 if (pending === 0) { render(); if (added) toast(added + ' foto' + (added > 1 ? 's' : '') + ' agregada' + (added > 1 ? 's' : ''), 'success'); }
             });

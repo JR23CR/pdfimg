@@ -1,0 +1,70 @@
+# openspec/config.yaml
+schema: spec-driven
+
+context: |
+  Project: pdfimg
+  Tech stack: Single HTML file + vanilla JavaScript + jsPDF (CDN v2.5.1)
+  Architecture: Monolithic single-page app, self-contained in index.html
+    - IIFE pattern for scope isolation
+    - DOM manipulation via document.getElementById / querySelectorAll
+    - Event-driven interaction (click, drag/drop, change)
+    - No build tools, no bundler, no package.json
+  Dependencies: jsPDF 2.5.1 loaded from CDN (cdnjs)
+  Git: Hosted on GitHub Pages (index.html renamed from previous name)
+  UI language: Spanish
+  Features:
+    - Drag-and-drop image upload (max 50 photos)
+    - Auto-load LOGO.png as watermark/logo
+    - Photo grid preview with delete per photo
+    - Configurable layout: 1/2/3/4 photos per page
+    - Page size: Letter (215.9×279.4 mm) or A4 (210×297 mm)
+    - Orientation: Portrait or Landscape
+    - Optional title page with album name
+    - Smart aspect-ratio-aware photo layout per page
+    - PDF output filename includes date/time
+  Conventions:
+    - No external CSS framework — hand-rolled responsive CSS
+    - No TypeScript — plain ES5-compatible JS (no arrow functions, no let/const)
+    - CSS custom properties not used — direct color values
+    - No testing infrastructure of any kind
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+    - Keep changes scoped to index.html (single-file app)
+    - External dependencies via CDN only (no npm/bundler)
+  specs:
+    - Use Given/When/Then for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+    - Reference browser behavior (File API, Canvas API, jsPDF API)
+  design:
+    - Include sequence diagrams for complex flows
+    - Document architecture decisions with rationale
+    - Note any polyfill or browser compatibility concerns
+    - Keep within the single-file constraint unless a strong reason exists to split
+  tasks:
+    - Group by phase, use hierarchical numbering
+    - Keep tasks completable in one session
+    - All work is in index.html unless explicitly stated
+  apply:
+    - Follow existing code patterns (no arrow functions, var over let/const, callbacks)
+    - tdd: false
+    - test_command: ""
+  verify:
+    - Manual verification required (open index.html in browser)
+    - test_command: ""
+    - build_command: ""
+    - coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas
+
+testing:
+  strict_tdd: false
+  test_runner: null
+  unit: false
+  integration: false
+  e2e: false
+  coverage: false
+  linter: null
+  formatter: null
+  type_checker: null
