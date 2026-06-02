@@ -141,10 +141,179 @@ header p { margin-top: .3rem; opacity: .85; font-size: .95rem; }
 .toast.success { background: #27ae60; }
 .toast.error { background: #e74c3c; }
 
+/* Asset Panel */
+.btn-outline {
+    padding: .5rem 1.3rem;
+    border: 2px solid #667eea;
+    border-radius: 8px;
+    font-size: .9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+    background: #fff;
+    color: #667eea;
+}
+.btn-outline:hover { background: #667eea; color: #fff; }
+.btn-outline.active { background: #667eea; color: #fff; }
+
+.asset-panel {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    margin: 1.5rem 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    display: none;
+}
+.asset-panel.open { display: block; }
+.asset-panel .asset-toolbar {
+    display: flex;
+    gap: .7rem;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: .8rem;
+}
+.asset-panel .asset-toolbar input[type="text"] {
+    padding: .35rem .7rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: .88rem;
+    flex: 1;
+    min-width: 160px;
+}
+.asset-panel .asset-toolbar input[type="text"]:focus { outline: none; border-color: #667eea; }
+.asset-panel .asset-count { color: #666; font-size: .85rem; }
+
+.asset-table-wrap {
+    overflow-x: auto;
+}
+.asset-panel table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .85rem;
+}
+.asset-panel th {
+    text-align: left;
+    padding: .5rem .6rem;
+    border-bottom: 2px solid #e0e0e0;
+    color: #555;
+    font-size: .8rem;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+.asset-panel td {
+    padding: .45rem .6rem;
+    border-bottom: 1px solid #eee;
+}
+.asset-panel tr:hover td { background: #f8f6ff; }
+.asset-panel tr.selected td { background: #e8e4ff; font-weight: 600; }
+.asset-panel .actions { white-space: nowrap; }
+.asset-panel .actions button {
+    padding: .25rem .6rem;
+    border: none;
+    border-radius: 5px;
+    font-size: .78rem;
+    cursor: pointer;
+    transition: all .15s;
+    margin-right: .3rem;
+}
+.asset-panel .actions .btn-sm-primary { background: #667eea; color: #fff; }
+.asset-panel .actions .btn-sm-primary:hover { background: #5a6fd6; }
+.asset-panel .actions .btn-sm-edit { background: #f39c12; color: #fff; }
+.asset-panel .actions .btn-sm-edit:hover { background: #e08e0b; }
+.asset-panel .actions .btn-sm-danger { background: #e74c3c; color: #fff; }
+.asset-panel .actions .btn-sm-danger:hover { background: #c0392b; }
+.asset-empty { text-align: center; color: #999; padding: 1.5rem; font-size: .9rem; }
+
+/* Selected Asset Indicator */
+.selected-indicator {
+    background: #e8e4ff;
+    border: 1px solid #667eea;
+    border-radius: 8px;
+    padding: .5rem 1rem;
+    margin: .5rem 0 0 0;
+    font-size: .85rem;
+    display: none;
+    align-items: center;
+    gap: .6rem;
+    flex-wrap: wrap;
+}
+.selected-indicator.show { display: flex; }
+.selected-indicator .badge { font-weight: 600; color: #333; }
+.selected-indicator .btn-xs {
+    padding: .2rem .6rem;
+    border: 1px solid #667eea;
+    border-radius: 5px;
+    font-size: .75rem;
+    cursor: pointer;
+    background: #fff;
+    color: #667eea;
+    transition: all .15s;
+}
+.selected-indicator .btn-xs:hover { background: #667eea; color: #fff; }
+
+/* Modals */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+}
+.modal-overlay.open { display: flex; }
+.modal-content {
+    background: #fff;
+    border-radius: 14px;
+    padding: 1.5rem 2rem;
+    max-width: 700px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0,0,0,.2);
+    position: relative;
+}
+.modal-content h3 { margin-bottom: 1rem; color: #333; font-size: 1.1rem; }
+.modal-content .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .8rem 1.2rem;
+}
+.modal-content .form-grid .full-width { grid-column: 1 / -1; }
+.modal-content .form-group { display: flex; flex-direction: column; }
+.modal-content .form-group label {
+    font-size: .8rem;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: .2rem;
+}
+.modal-content .form-group input,
+.modal-content .form-group select,
+.modal-content .form-group textarea {
+    padding: .4rem .6rem;
+    border: 2px solid #ddd;
+    border-radius: 7px;
+    font-size: .88rem;
+    font-family: inherit;
+}
+.modal-content .form-group input:focus,
+.modal-content .form-group select:focus,
+.modal-content .form-group textarea:focus { outline: none; border-color: #667eea; }
+.modal-content .form-group textarea { resize: vertical; min-height: 50px; }
+.modal-content .modal-actions {
+    display: flex;
+    gap: .7rem;
+    justify-content: flex-end;
+    margin-top: 1.2rem;
+}
+
 @media (max-width: 600px) {
     header h1 { font-size: 1.4rem; }
     .container { padding: 1rem; }
     .grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+    .modal-content .form-grid { grid-template-columns: 1fr; }
+    .modal-content { padding: 1.2rem; }
 }
 </style>
 </head>
@@ -196,7 +365,108 @@ header p { margin-top: .3rem; opacity: .85; font-size: .95rem; }
         <span class="spacer"></span>
         <span id="counter">0 fotos</span>
         <button class="btn btn-danger" id="clearBtn">Limpiar</button>
+        <button class="btn btn-outline" id="assetToggleBtn">Banco Activos</button>
         <button class="btn btn-success" id="generateBtn">Generar PDF</button>
+    </div>
+
+    <div class="selected-indicator" id="selectedIndicator">
+        <span>&#x1F4CB; Activo seleccionado: </span>
+        <span class="badge" id="selectedBadge"></span>
+        <button class="btn-xs" id="deselectBtn">Deseleccionar</button>
+    </div>
+
+    <div class="asset-panel" id="assetPanel">
+        <div class="asset-toolbar">
+            <input type="text" id="assetSearch" placeholder="Buscar por c&oacute;digo o descripci&oacute;n...">
+            <span class="asset-count" id="assetCount">0 activos</span>
+            <button class="btn btn-outline" id="newAssetBtn" style="margin-left:auto;">+ Nuevo Activo</button>
+        </div>
+        <div class="asset-table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>C&oacute;digo</th>
+                        <th>Descripci&oacute;n</th>
+                        <th>Tipo</th>
+                        <th>Marca</th>
+                        <th style="width:170px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="assetTableBody"></tbody>
+            </table>
+        </div>
+        <div class="asset-empty" id="assetEmpty">Sin activos. Cargando o agrega uno nuevo.</div>
+    </div>
+
+    <div class="modal-overlay" id="assetFormModal">
+        <div class="modal-content">
+            <h3 id="assetFormTitle">Nuevo Activo</h3>
+            <form id="assetForm" autocomplete="off">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="af_correlativo">Correlativo</label>
+                        <input type="number" id="af_correlativo" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="af_tipo">Tipo</label>
+                        <select id="af_tipo">
+                            <option value="">Seleccionar...</option>
+                            <option value="Vehículo">Vehículo</option>
+                            <option value="Máquina">Máquina</option>
+                            <option value="Arrastra">Arrastra</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="af_codigo">Código</label>
+                        <input type="text" id="af_codigo">
+                    </div>
+                    <div class="form-group">
+                        <label for="af_descripcion">Descripción</label>
+                        <input type="text" id="af_descripcion">
+                    </div>
+                    <div class="form-group">
+                        <label for="af_no_serie">No. Serie</label>
+                        <input type="text" id="af_no_serie">
+                    </div>
+                    <div class="form-group">
+                        <label for="af_no_modelo">No. Modelo</label>
+                        <input type="text" id="af_no_modelo">
+                    </div>
+                    <div class="form-group">
+                        <label for="af_marca">Marca</label>
+                        <input type="text" id="af_marca">
+                    </div>
+                    <div class="form-group">
+                        <label for="af_ubicacion">Ubicación</label>
+                        <input type="text" id="af_ubicacion">
+                    </div>
+                    <div class="form-group">
+                        <label for="af_placa">Placa</label>
+                        <input type="text" id="af_placa">
+                    </div>
+                    <div class="form-group">
+                        <label for="af_chasis">Chasis</label>
+                        <input type="text" id="af_chasis">
+                    </div>
+                    <div class="form-group">
+                        <label for="af_motor">Motor</label>
+                        <input type="text" id="af_motor">
+                    </div>
+                    <div class="form-group">
+                        <label for="af_estado">Estado</label>
+                        <input type="text" id="af_estado">
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="af_observaciones">Observaciones</label>
+                        <textarea id="af_observaciones"></textarea>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn" id="assetFormCancel" style="background:#eee;color:#333;">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Guardar</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <div class="grid" id="photoGrid">
@@ -231,6 +501,20 @@ header p { margin-top: .3rem; opacity: .85; font-size: .95rem; }
     var titleToggle = document.getElementById('titleToggle');
     var titleInput = document.getElementById('titleInput');
     var toastEl = document.getElementById('toast');
+
+    var assetToggleBtn = document.getElementById('assetToggleBtn');
+    var assetPanel = document.getElementById('assetPanel');
+    var assetTableBody = document.getElementById('assetTableBody');
+    var assetSearch = document.getElementById('assetSearch');
+    var assetCount = document.getElementById('assetCount');
+    var assetEmpty = document.getElementById('assetEmpty');
+    var newAssetBtn = document.getElementById('newAssetBtn');
+    var assetFormModal = document.getElementById('assetFormModal');
+    var assetForm = document.getElementById('assetForm');
+    var assetFormTitle = document.getElementById('assetFormTitle');
+    var selectedIndicator = document.getElementById('selectedIndicator');
+    var selectedBadge = document.getElementById('selectedBadge');
+    var deselectBtn = document.getElementById('deselectBtn');
 
     var toastTimer = null;
 
@@ -286,6 +570,139 @@ header p { margin-top: .3rem; opacity: .85; font-size: .95rem; }
         };
         xhr.onerror = function() { toast('Error de red al cargar activos.', 'error'); };
         xhr.send();
+    }
+
+    function generateAssetId() {
+        if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+            return crypto.randomUUID();
+        }
+        return 'asset-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+    }
+
+    function renderAssetTable() {
+        var q = assetSearch.value.trim().toLowerCase();
+        var filtered = q ? assets.filter(function(a) {
+            return (a.codigo && a.codigo.toLowerCase().indexOf(q) !== -1) ||
+                   (a.descripcion && a.descripcion.toLowerCase().indexOf(q) !== -1);
+        }) : assets;
+
+        assetCount.textContent = filtered.length + ' activo' + (filtered.length !== 1 ? 's' : '');
+
+        if (!filtered.length) {
+            assetTableBody.innerHTML = '';
+            assetEmpty.style.display = 'block';
+            return;
+        }
+        assetEmpty.style.display = 'none';
+
+        var html = '';
+        filtered.forEach(function(a) {
+            var selected = (a.id === selectedAssetId) ? ' class="selected"' : '';
+            var cod = a.codigo || '—';
+            var desc = a.descripcion || '—';
+            var tipo = a.tipo || '—';
+            var marca = a.marca || '—';
+            var selectedTxt = (a.id === selectedAssetId) ? '✓' : 'Seleccionar';
+            var selectedCls = (a.id === selectedAssetId) ? 'btn-sm-primary' : 'btn-sm-primary';
+            html += '<tr' + selected + '>'
+                + '<td>' + escHtml(cod) + '</td>'
+                + '<td>' + escHtml(desc) + '</td>'
+                + '<td>' + escHtml(tipo) + '</td>'
+                + '<td>' + escHtml(marca) + '</td>'
+                + '<td class="actions">'
+                + '<button class="' + selectedCls + '" data-action="select" data-id="' + a.id + '">' + selectedTxt + '</button>'
+                + '<button class="btn-sm-edit" data-action="edit" data-id="' + a.id + '">Editar</button>'
+                + '<button class="btn-sm-danger" data-action="delete" data-id="' + a.id + '">Eliminar</button>'
+                + '</td></tr>';
+        });
+        assetTableBody.innerHTML = html;
+        updateSelectedIndicator();
+    }
+
+    function escHtml(s) {
+        if (s === null || s === undefined) return '';
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function updateSelectedIndicator() {
+        if (selectedAssetId) {
+            var asset = null;
+            for (var i = 0; i < assets.length; i++) {
+                if (assets[i].id === selectedAssetId) { asset = assets[i]; break; }
+            }
+            if (asset) {
+                selectedBadge.textContent = (asset.codigo || '—') + ' - ' + (asset.descripcion || '—');
+                selectedIndicator.classList.add('show');
+                return;
+            }
+        }
+        selectedIndicator.classList.remove('show');
+        selectedBadge.textContent = '';
+    }
+
+    function openAssetForm(asset) {
+        var editing = asset !== null;
+        assetFormTitle.textContent = editing ? 'Editar Activo' : 'Nuevo Activo';
+        document.getElementById('af_correlativo').value = editing ? asset.correlativo : '';
+        document.getElementById('af_tipo').value = editing ? (asset.tipo || '') : '';
+        document.getElementById('af_codigo').value = editing ? (asset.codigo || '') : '';
+        document.getElementById('af_descripcion').value = editing ? (asset.descripcion || '') : '';
+        document.getElementById('af_no_serie').value = editing ? (asset.no_serie || '') : '';
+        document.getElementById('af_no_modelo').value = editing ? (asset.no_modelo || '') : '';
+        document.getElementById('af_marca').value = editing ? (asset.marca || '') : '';
+        document.getElementById('af_ubicacion').value = editing ? (asset.ubicacion || '') : '';
+        document.getElementById('af_placa').value = editing ? (asset.placa || '') : '';
+        document.getElementById('af_chasis').value = editing ? (asset.chasis || '') : '';
+        document.getElementById('af_motor').value = editing ? (asset.motor || '') : '';
+        document.getElementById('af_estado').value = editing ? (asset.estado || '') : '';
+        document.getElementById('af_observaciones').value = editing ? (asset.observaciones || '') : '';
+        assetForm._editingId = editing ? asset.id : null;
+        assetFormModal.classList.add('open');
+    }
+
+    function closeAssetForm() {
+        assetFormModal.classList.remove('open');
+        assetForm._editingId = null;
+    }
+
+    function handleAssetFormSubmit(e) {
+        e.preventDefault();
+        var data = {
+            correlativo: parseInt(document.getElementById('af_correlativo').value, 10) || 0,
+            tipo: document.getElementById('af_tipo').value,
+            codigo: document.getElementById('af_codigo').value.trim(),
+            descripcion: document.getElementById('af_descripcion').value.trim(),
+            no_serie: document.getElementById('af_no_serie').value.trim() || null,
+            no_modelo: document.getElementById('af_no_modelo').value.trim() || null,
+            marca: document.getElementById('af_marca').value.trim() || null,
+            ubicacion: document.getElementById('af_ubicacion').value.trim(),
+            placa: document.getElementById('af_placa').value.trim() || null,
+            chasis: document.getElementById('af_chasis').value.trim() || null,
+            motor: document.getElementById('af_motor').value.trim() || null,
+            estado: document.getElementById('af_estado').value.trim(),
+            observaciones: document.getElementById('af_observaciones').value.trim() || null
+        };
+        if (!data.descripcion || !data.tipo) {
+            toast('Completa los campos requeridos (tipo, descripci\u00f3n).', 'error');
+            return;
+        }
+        var editId = assetForm._editingId;
+        if (editId) {
+            for (var i = 0; i < assets.length; i++) {
+                if (assets[i].id === editId) {
+                    for (var k in data) { if (data.hasOwnProperty(k)) assets[i][k] = data[k]; }
+                    break;
+                }
+            }
+            toast('Activo actualizado.', 'success');
+        } else {
+            data.id = generateAssetId();
+            assets.push(data);
+            toast('Activo creado.', 'success');
+        }
+        saveAssets();
+        closeAssetForm();
+        renderAssetTable();
     }
 
     function render() {
@@ -373,6 +790,59 @@ header p { margin-top: .3rem; opacity: .85; font-size: .95rem; }
     clearBtn.addEventListener('click', function() {
         if (!photos.length) return;
         if (confirm('\u00bfEliminar todas?')) { photos.length = 0; render(); toast('Fotos eliminadas', ''); }
+    });
+
+    assetToggleBtn.addEventListener('click', function() {
+        var open = assetPanel.classList.toggle('open');
+        assetToggleBtn.textContent = open ? 'Banco Activos \u25BC' : 'Banco Activos';
+        if (open) renderAssetTable();
+    });
+
+    assetSearch.addEventListener('keyup', function() { renderAssetTable(); });
+
+    assetTableBody.addEventListener('click', function(e) {
+        var btn = e.target;
+        if (btn.tagName !== 'BUTTON') return;
+        var id = btn.getAttribute('data-id');
+        var action = btn.getAttribute('data-action');
+        if (action === 'select') {
+            if (selectedAssetId === id) { selectedAssetId = null; }
+            else { selectedAssetId = id; }
+            renderAssetTable();
+        } else if (action === 'edit') {
+            var asset = null;
+            for (var i = 0; i < assets.length; i++) {
+                if (assets[i].id === id) { asset = assets[i]; break; }
+            }
+            if (asset) openAssetForm(asset);
+        } else if (action === 'delete') {
+            if (confirm('\u00bfEliminar este activo?')) {
+                for (var j = 0; j < assets.length; j++) {
+                    if (assets[j].id === id) {
+                        assets.splice(j, 1);
+                        if (selectedAssetId === id) selectedAssetId = null;
+                        break;
+                    }
+                }
+                saveAssets();
+                renderAssetTable();
+                toast('Activo eliminado.', '');
+            }
+        }
+    });
+
+    newAssetBtn.addEventListener('click', function() { openAssetForm(null); });
+
+    deselectBtn.addEventListener('click', function() {
+        selectedAssetId = null;
+        updateSelectedIndicator();
+        renderAssetTable();
+    });
+
+    assetForm.addEventListener('submit', handleAssetFormSubmit);
+    document.getElementById('assetFormCancel').addEventListener('click', closeAssetForm);
+    assetFormModal.addEventListener('click', function(e) {
+        if (e.target === assetFormModal) closeAssetForm();
     });
 
     // ---------- GENERATE PDF ----------
