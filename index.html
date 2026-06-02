@@ -211,8 +211,10 @@ header p { margin-top: .3rem; opacity: .85; font-size: .95rem; }
 (function() {
     'use strict';
 
-    var photos = []; // { dataUrl, w, h }
+    var photos = []; // { dataUrl, w, h, comment }
     var logo = null; // { dataUrl, w, h }
+    var assets = [];
+    var selectedAssetId = null;
     var MAX_PHOTOS = 50;
 
     var dropZone = document.getElementById('dropZone');
@@ -238,6 +240,52 @@ header p { margin-top: .3rem; opacity: .85; font-size: .95rem; }
         toastEl.className = 'toast ' + (type || '');
         requestAnimationFrame(function() { toastEl.classList.add('show'); });
         toastTimer = setTimeout(function() { toastEl.classList.remove('show'); }, 3000);
+    }
+
+    // ---- ASSET BANK ----
+    function loadAssets() {
+        try {
+            var stored = localStorage.getItem('pdfimg_assets');
+            if (stored) {
+                assets = JSON.parse(stored);
+                return;
+            }
+        } catch (e) { /* localStorage unavailable, continue with fetch */ }
+        importDefaultAssets();
+    }
+
+    function saveAssets() {
+        try {
+            localStorage.setItem('pdfimg_assets', JSON.stringify(assets));
+        } catch (e) {
+            if (e.name === 'QuotaExceededError' || e.code === 22) {
+                toast('Error: almacenamiento local lleno. No se pudieron guardar los activos.', 'error');
+            } else {
+                toast('Error al guardar activos.', 'error');
+            }
+        }
+    }
+
+    function importDefaultAssets() {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'activos.json', true);
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                try {
+                    var data = JSON.parse(xhr.responseText);
+                    if (Array.isArray(data) && data.length) {
+                        assets = data;
+                        saveAssets();
+                    }
+                } catch (e) {
+                    toast('Error al cargar lista de activos.', 'error');
+                }
+            } else {
+                toast('Error al cargar activos.json (HTTP ' + xhr.status + ').', 'error');
+            }
+        };
+        xhr.onerror = function() { toast('Error de red al cargar activos.', 'error'); };
+        xhr.send();
     }
 
     function render() {
@@ -567,6 +615,7 @@ header p { margin-top: .3rem; opacity: .85; font-size: .95rem; }
         toast('PDF generado (' + pages + ' p&aacute;g' + (pages > 1 ? 'inas' : 'ina') + ')', 'success');
     });
 
+    loadAssets();
     render();
 })();
 </script>
